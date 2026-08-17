@@ -14,6 +14,7 @@ import com.znxsgl.mapper.UserMapper;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -44,17 +45,20 @@ public class AdminUserController {
     private final ClassInfoMapper classInfoMapper;
     private final CourseMapper courseMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JdbcTemplate jdbc;
 
     public AdminUserController(UserMapper userMapper,
                                TeacherMapper teacherMapper,
                                ClassInfoMapper classInfoMapper,
                                CourseMapper courseMapper,
-                               PasswordEncoder passwordEncoder) {
+                               PasswordEncoder passwordEncoder,
+                               JdbcTemplate jdbc) {
         this.userMapper = userMapper;
         this.teacherMapper = teacherMapper;
         this.classInfoMapper = classInfoMapper;
         this.courseMapper = courseMapper;
         this.passwordEncoder = passwordEncoder;
+        this.jdbc = jdbc;
     }
 
     // ============================================================
@@ -201,12 +205,24 @@ public class AdminUserController {
             classIdToName.put(c.getId(), c.getClassName());
         }
 
-        // 专业分布
+        // 专业分布（教师无专业字段，走院系分布）
         Map<String, Long> majorCount = new LinkedHashMap<>();
-        for (User u : users) {
-            String major = u.getMajor();
-            if (major == null || major.trim().isEmpty()) continue;
-            majorCount.merge(major, 1L, Long::sum);
+        if (role != null && role == 2) {
+            // 教师按院系分布：teacher.dept_id -> department.dept_name
+            for (Map<String, Object> row : jdbc.queryForList(
+                    "SELECT d.dept_name AS name, COUNT(t.id) AS cnt " +
+                    "FROM teacher t LEFT JOIN department d ON d.id = t.dept_id " +
+                    "GROUP BY d.dept_name")) {
+                String name = (String) row.get("name");
+                majorCount.merge(name == null || name.isBlank() ? "未设置院系" : name,
+                        ((Number) row.get("cnt")).longValue(), Long::sum);
+            }
+        } else {
+            for (User u : users) {
+                String major = u.getMajor();
+                if (major == null || major.trim().isEmpty()) continue;
+                majorCount.merge(major, 1L, Long::sum);
+            }
         }
         List<Map<String, Object>> majorList = majorCount.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
@@ -692,5 +708,51 @@ public class AdminUserController {
                 new LambdaQueryWrapper<Teacher>()
                         .eq(Teacher::getStatus, 1)
                         .orderByAsc(Teacher::getRealName)));
+    }
+
+    /**
+     * 查询教师所教课程及班级列表
+     * @param teacherUserId 教师对应用户表ID（user.id）
+     */
+    @GetMapping("/teacher-courses")
+    public ResponseEntity<List<Map<String, Object>>> getTeacherCourses(
+            @RequestParam Long teacherUserId,
+            @RequestParam(required = false) String semester) {
+
+        // 根据user id获取教师真实姓名，再匹配teacher表
+        User user = userMapper.selectById(teacherUserId);
+        if (user == null || user.getRole() != 2) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        String realName = user.getRealName();
+        Teacher teacher = teacherMapper.selectOne(
+                new LambdaQueryWrapper<Teacher>().eq(Teacher::getRealName, realName));
+        if (teacher == null) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        Long teacherId = teacher.getId();
+
+        // 查询该教师所有课程，以及每个课程关联的班级
+        // JOIN: course -> course_class -> class_info
+        String sql = "SELECT c.id AS course_id, c.course_name, c.course_type, c.credit, c.semester, " +
+                "ci.id AS class_id, ci.class_name " +
+                "FROM course c " +
+                "INNER JOIN course_class cc ON cc.course_id = c.id " +
+                "INNER JOIN class_info ci ON cc.class_id = ci.id " +
+                "WHERE c.teacher_id = ?";
+        List<Object> params = new ArrayList<>();
+        params.add(teacherId);
+
+        if (semester != null && !semester.trim().isEmpty()) {
+            sql += " AND c.semester = ?";
+            params.add(semester);
+        }
+
+        sql += " ORDER BY c.semester DESC, c.course_name, ci.class_name";
+
+        List<Map<String, Object>> rows = jdbc.queryForList(sql, params.toArray());
+        return ResponseEntity.ok(rows);
     }
 }

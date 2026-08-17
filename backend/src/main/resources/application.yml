@@ -42,7 +42,7 @@ llm:
   model: deepseek-v4-pro
   url: https://api.deepseek.com/chat/completions
 
-# 本地 BGE-M3 Embedding 服务配置
+# 本地 BGE-M3 Embedding 服务配置，宽带是数据流量大小，吞吐是发送接收的效率，物理层，传输层，数据链路层，网络层，会话层，应用层
 embedding:
   local:
     url: http://localhost:8000/embeddings

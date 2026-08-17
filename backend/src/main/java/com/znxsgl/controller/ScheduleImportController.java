@@ -1501,7 +1501,7 @@ public class ScheduleImportController {
         if (className == null || className.trim().isEmpty()) msgs.add("缺少对应班级");
         try { 
             int dow = Integer.parseInt(dayOfWeek.replaceAll("[^0-9]", ""));
-            if (dow < 1 || dow > 6) msgs.add("星期几范围错误（仅支持周一至周六，1-6）");
+            if (dow < 1 || dow > 7) msgs.add("星期几范围错误（仅支持周一至周日，1-7）");
         } catch (Exception e) { msgs.add("缺少或格式错误：星期几"); }
         try { LocalTime.parse(startTime, DateTimeFormatter.ofPattern("HH:mm")); } catch (Exception e) { msgs.add("缺少或格式错误：开始时间"); }
         try { LocalTime.parse(endTime, DateTimeFormatter.ofPattern("HH:mm")); } catch (Exception e) { msgs.add("缺少或格式错误：结束时间"); }
@@ -1655,7 +1655,7 @@ public class ScheduleImportController {
             "- courseName: 课程名称\n" +
             "- teacherName: 授课教师姓名（如果文件中有教师姓名请提取，没有则留空字符串）\n" +
             "- className: 班级名称\n" +
-            "- dayOfWeek: 星期几（数字，1=周一...6=周六，周日不排课）\n" +
+            "- dayOfWeek: 星期几（数字，1=周一...7=周日，节假日补课可排周日）\n" +
             "- startTime: 开始时间（HH:mm格式，按文件中的实际时间填写）\n" +
             "- endTime: 结束时间（HH:mm格式，按文件中的实际时间填写）\n" +
             "- startNode: 开始节次（数字，1-12，按文件中的节次填写）\n" +

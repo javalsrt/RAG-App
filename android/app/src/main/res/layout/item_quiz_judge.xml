@@ -11,7 +11,7 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:layout_marginBottom="24dp">
         <TextView android:id="@+id/tv_quiz_tag" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:text="⚡ 判断题"
+            android:layout_height="wrap_content" android:text="判断题"
             android:textSize="12sp" android:textColor="@color/primary"
             android:paddingHorizontal="10dp" android:paddingVertical="4dp"
             android:background="@drawable/bg_tag" />

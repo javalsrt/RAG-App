@@ -24,6 +24,14 @@ public class QuizPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private static final int TYPE_ANALYSIS = 2;
     private static final int TYPE_FILL = 3;
 
+    // 统一配色
+    private static final int COLOR_PRIMARY = 0xFF5E6AD2;
+    private static final int COLOR_WHITE = 0xFFFFFFFF;
+    private static final int COLOR_HAIRLINE = 0xFFE5E5EA;
+    private static final int COLOR_INK = 0xFF1D1D1F;
+    private static final int COLOR_SUCCESS = 0xFF34C759;
+    private static final int COLOR_DANGER = 0xFFFF3B30;
+
     private final List<QuizQuestion> questions;
     private OnAnswerListener listener;
 
@@ -63,7 +71,7 @@ public class QuizPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     // ===== 选择题 =====
     private void bindChoice(ChoiceVH vh, QuizQuestion q, int pos) {
-        vh.tvTag.setText("📝 单选题");
+        vh.tvTag.setText("单选题");
         vh.tvNum.setText((pos + 1) + "/" + questions.size());
         vh.tvQuestion.setText(q.getQuestion());
         vh.llOptions.removeAllViews();
@@ -72,27 +80,11 @@ public class QuizPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         if (options != null) {
             for (String optText : options) {
                 boolean selected = optText.equals(q.getUserAnswer());
-                TextView tv = new TextView(vh.itemView.getContext());
-                tv.setText(optText);
-                tv.setTextSize(16);
-                tv.setGravity(Gravity.CENTER);
-                tv.setPadding(20, 18, 20, 18);
-                GradientDrawable bg = new GradientDrawable();
-                bg.setCornerRadius(14);
-                bg.setColor(selected ? Color.parseColor("#5E6AD2") : Color.WHITE);
-                bg.setStroke(1, Color.parseColor("#E5E5EA"));
-                tv.setBackground(bg);
-                tv.setTextColor(selected ? Color.WHITE : Color.parseColor("#1D1D1F"));
-                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                lp.setMargins(0, 0, 0, 10);
-                tv.setLayoutParams(lp);
+                TextView tv = createOptionText(vh.itemView.getContext(), optText, selected);
 
                 final String answer = optText;
                 tv.setOnClickListener(v -> {
-                    // 点击反馈动画
-                    v.setAlpha(0.6f);
-                    v.postDelayed(() -> v.setAlpha(1.0f), 150);
+                    if (answer.equals(q.getUserAnswer())) return;
                     q.setUserAnswer(answer);
                     q.setModifiedCount(q.getModifiedCount() + 1);
                     notifyItemChanged(pos);
@@ -105,65 +97,106 @@ public class QuizPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     // ===== 判断题 =====
     private void bindJudge(JudgeVH vh, QuizQuestion q, int pos) {
-        vh.tvTag.setText("⚡ 判断题");
+        vh.tvTag.setText("判断题");
         vh.tvNum.setText((pos + 1) + "/" + questions.size());
         vh.tvQuestion.setText(q.getQuestion());
 
         boolean selectedTrue = "正确".equals(q.getUserAnswer());
         boolean selectedFalse = "错误".equals(q.getUserAnswer());
 
-        // 统一配色：选中浅灰，未选中白色卡片
-        vh.btnTrue.setBackground(getJudgeBg(selectedTrue));
-        vh.btnFalse.setBackground(getJudgeBg(selectedFalse));
+        applyJudgeStyle(vh.btnTrue, "正确", selectedTrue, true);
+        applyJudgeStyle(vh.btnFalse, "错误", selectedFalse, false);
 
         vh.btnTrue.setOnClickListener(v -> {
-            if (selectedTrue) return; // 已是选中状态
+            if (selectedTrue) return;
             q.setUserAnswer("正确");
-            notifyItemChanged(pos); // 刷新两个按钮状态
+            q.setModifiedCount(q.getModifiedCount() + 1);
+            notifyItemChanged(pos);
             v.postDelayed(() -> {
                 if (listener != null) listener.onAnswered(pos, "正确");
-            }, 300);
+            }, 200);
         });
         vh.btnFalse.setOnClickListener(v -> {
             if (selectedFalse) return;
             q.setUserAnswer("错误");
+            q.setModifiedCount(q.getModifiedCount() + 1);
             notifyItemChanged(pos);
             v.postDelayed(() -> {
                 if (listener != null) listener.onAnswered(pos, "错误");
-            }, 300);
+            }, 200);
         });
     }
 
-    private GradientDrawable getJudgeBg(boolean selected) {
+    // ===== 解析题 =====
+    private void bindAnalysis(AnalysisVH vh, QuizQuestion q, int pos) {
+        vh.tvTag.setText("解析题");
+        vh.tvNum.setText((pos + 1) + "/" + questions.size());
+        vh.tvQuestion.setText(q.getQuestion());
+        if (q.getUserAnswer() == null || q.getUserAnswer().isEmpty()) {
+            vh.etAnswer.setText("");
+        } else if (!vh.etAnswer.getText().toString().equals(q.getUserAnswer())) {
+            vh.etAnswer.setText(q.getUserAnswer());
+        }
+    }
+
+    // ===== 填空题 =====
+    private void bindFill(FillVH vh, QuizQuestion q, int pos) {
+        vh.tvTag.setText("填空题");
+        vh.tvNum.setText((pos + 1) + "/" + questions.size());
+        vh.tvQuestion.setText(q.getQuestion());
+        if (q.getUserAnswer() == null || q.getUserAnswer().isEmpty()) {
+            vh.etAnswer.setText("");
+        } else if (!vh.etAnswer.getText().toString().equals(q.getUserAnswer())) {
+            vh.etAnswer.setText(q.getUserAnswer());
+        }
+    }
+
+    /** 统一选项样式：白色卡片 + 选中主色 */
+    private TextView createOptionText(android.content.Context ctx, String text, boolean selected) {
+        TextView tv = new TextView(ctx);
+        tv.setText(text);
+        tv.setTextSize(16);
+        tv.setGravity(Gravity.CENTER_VERTICAL);
+        tv.setPadding(dp(ctx, 20), dp(ctx, 18), dp(ctx, 20), dp(ctx, 18));
+        tv.setBackground(makeOptionBg(selected));
+        tv.setTextColor(selected ? COLOR_WHITE : COLOR_INK);
+        tv.setClickable(true);
+        tv.setFocusable(true);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, 0, dp(ctx, 12));
+        tv.setLayoutParams(lp);
+
+        // 点击反馈
+        tv.setOnTouchListener((v, e) -> {
+            if (e.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                v.animate().scaleX(0.98f).scaleY(0.98f).setDuration(80).start();
+            } else if (e.getAction() == android.view.MotionEvent.ACTION_UP
+                    || e.getAction() == android.view.MotionEvent.ACTION_CANCEL) {
+                v.animate().scaleX(1f).scaleY(1f).setDuration(80).start();
+            }
+            return false;
+        });
+        return tv;
+    }
+
+    private void applyJudgeStyle(TextView tv, String label, boolean selected, boolean isTrue) {
+        tv.setText(label);
+        tv.setBackground(makeOptionBg(selected));
+        tv.setTextColor(selected ? COLOR_WHITE : (isTrue ? COLOR_SUCCESS : COLOR_DANGER));
+    }
+
+    private GradientDrawable makeOptionBg(boolean selected) {
         GradientDrawable bg = new GradientDrawable();
-        bg.setCornerRadius(12);
-        bg.setColor(selected ? Color.parseColor("#EEEEF2") : Color.WHITE);
-        bg.setStroke(1, Color.parseColor("#E5E5EA"));
+        bg.setCornerRadius(14);
+        bg.setColor(selected ? COLOR_PRIMARY : COLOR_WHITE);
+        bg.setStroke(1, selected ? COLOR_PRIMARY : COLOR_HAIRLINE);
         return bg;
     }
 
-    // ===== 解析题（无提交按钮，由长按提交统管）=====
-    private void bindAnalysis(AnalysisVH vh, QuizQuestion q, int pos) {
-        vh.tvTag.setText("✍️ 解析题");
-        vh.tvNum.setText((pos + 1) + "/" + questions.size());
-        vh.tvQuestion.setText(q.getQuestion());
-        if (q.getUserAnswer() == null || q.getUserAnswer().isEmpty()) {
-            vh.etAnswer.setText("");
-        } else if (!vh.etAnswer.getText().toString().equals(q.getUserAnswer())) {
-            vh.etAnswer.setText(q.getUserAnswer());
-        }
-    }
-
-    // ===== 填空题（无提交按钮，由长按提交统管）=====
-    private void bindFill(FillVH vh, QuizQuestion q, int pos) {
-        vh.tvTag.setText("🔤 填空题");
-        vh.tvNum.setText((pos + 1) + "/" + questions.size());
-        vh.tvQuestion.setText(q.getQuestion());
-        if (q.getUserAnswer() == null || q.getUserAnswer().isEmpty()) {
-            vh.etAnswer.setText("");
-        } else if (!vh.etAnswer.getText().toString().equals(q.getUserAnswer())) {
-            vh.etAnswer.setText(q.getUserAnswer());
-        }
+    private int dp(android.content.Context ctx, int v) {
+        return (int) (v * ctx.getResources().getDisplayMetrics().density + 0.5f);
     }
 
     /** 提交前收集解析/填空题的文本答案 */

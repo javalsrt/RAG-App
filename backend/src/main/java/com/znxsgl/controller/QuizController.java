@@ -121,6 +121,7 @@ public class QuizController {
         int answered = 0, correct = 0, skip = 0, totalSec = 0;
         int earlyCorrect = 0, earlyTotal = 0, midCorrect = 0, midTotal = 0, lateCorrect = 0, lateTotal = 0;
         int total = answers.size(), third = total / 3;
+        List<QuizAnswer> savedAnswers = new ArrayList<>();
 
         for (int i = 0; i < answers.size(); i++) {
             Map<String, Object> a = answers.get(i);
@@ -155,6 +156,7 @@ public class QuizController {
             qa.setModifiedCount(a.get("modifiedCount") instanceof Number ? ((Number) a.get("modifiedCount")).intValue() : 0);
             qa.setCreatedAt(LocalDateTime.now());
             answerMapper.insert(qa);
+            savedAnswers.add(qa);
 
             if (isCorrect == 1) {
                 if (i < third) earlyCorrect++;
@@ -225,9 +227,24 @@ public class QuizController {
             System.out.println("=== 难度更新失败: " + e.getMessage());
         }
 
+        // 收集本次错题/空题，便于报告页直接展示
+        List<Map<String, String>> wrongAnswers = new ArrayList<>();
+        for (QuizAnswer qa : savedAnswers) {
+            Integer ic = qa.getIsCorrect();
+            if (ic != null && ic != 1) {
+                Map<String, String> item = new LinkedHashMap<>();
+                item.put("questionType", qa.getQuestionType());
+                item.put("question", qa.getQuestion());
+                item.put("userAnswer", qa.getUserAnswer());
+                item.put("correctAnswer", qa.getCorrectAnswer());
+                wrongAnswers.add(item);
+            }
+        }
+
         Map<String, Object> result = new HashMap<>();
         result.put("sessionId", sessionId); result.put("correctCount", correct);
         result.put("skipCount", skip); result.put("totalDurationSec", totalSec);
+        result.put("wrongAnswers", wrongAnswers);
         if (evalResult != null) result.putAll(evalResult);
         return ResponseEntity.ok(result);
     }

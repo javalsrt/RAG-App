@@ -151,11 +151,11 @@ public class TeacherScheduleAdjustController {
         List<Classroom> allRooms = classroomMapper.selectList(
                 new LambdaQueryWrapper<Classroom>().eq(Classroom::getIsActive, 1));
 
-        // 遍历 6天 × 8节，找无冲突的时段（周日不排课）
+        // 遍历 7天 × 8节，找无冲突的时段（节假日补课允许排周日）
         List<Map<String, Object>> options = new ArrayList<>();
         int step = schedule.getStep() != null ? schedule.getStep() : 1;
 
-        for (int day = 1; day <= 6; day++) {
+        for (int day = 1; day <= 7; day++) {
             for (int startNode = 1; startNode + step - 1 <= 8; startNode++) {
                 // 跳过与原时段相同的
                 if (day == schedule.getDayOfWeek() && startNode == schedule.getStartNode()) continue;

@@ -33,7 +33,8 @@ public class ScheduleConflictChecker {
 
     /** 每天最大节数（艺术学部/汽车学部作息，上午4节+下午2节+晚上2节 = 8节） */
     public static final int MAX_NODES_PER_DAY = 8;
-    public static final int MAX_DAYS = 6;
+    /** 每周排课天数（周一至周日，7天；节假日补课允许排周日） */
+    public static final int MAX_DAYS = 7;
     /** 默认最大教学周数 */
     public static final int DEFAULT_MAX_WEEKS = 20;
 

@@ -21,8 +21,8 @@ import { getSemesterList } from '@/api/semester'
 import { useDialog } from '@/hooks/use-dialog'
 import type { Semester } from '@/types'
 
-// 星期名称（周日不排课）
-const DAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六']
+// 星期名称（周一至周日，节假日补课可排周日）
+const DAY_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 
 // 小节列表（1-8节，艺术学部/汽车学部作息）
 const NODE_LIST = Array.from({ length: 8 }, (_, i) => i + 1)
@@ -816,7 +816,7 @@ export function SchedulePlanner({
                       {NODE_TIMES[node].start}-{NODE_TIMES[node].end}
                     </div>
                   </td>
-                  {Array.from({ length: 6 }, (_, i) => i + 1).map((day) => {
+                  {Array.from({ length: 7 }, (_, i) => i + 1).map((day) => {
                     const state = getCellState(day, node)
                     return (
                       <td

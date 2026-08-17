@@ -404,6 +404,11 @@ public class FocusFragment extends Fragment {
         for (QuizQuestion q : quizQuestions)
             if (q.getUserAnswer()==null||q.getUserAnswer().isEmpty()) q.setUserAnswer("不会");
 
+        android.app.ProgressDialog pd = new android.app.ProgressDialog(getContext());
+        pd.setMessage("正在提交并生成测评报告...");
+        pd.setCancelable(false);
+        pd.show();
+
         List<Map<String, Object>> answers = new ArrayList<>();
         for (QuizQuestion q : quizQuestions) {
             Map<String, Object> a = new HashMap<>();
@@ -419,12 +424,14 @@ public class FocusFragment extends Fragment {
             @Override public void onResponse(Call<Map<String, Object>> c, Response<Map<String, Object>> r) {
                 if (!isAdded()) return;
                 handler.post(() -> {
+                    pd.dismiss();
+                    int total = quizQuestions.size();
                     quizQuestions.clear(); quizAdapter.notifyDataSetChanged();
                     llQuizArea.setVisibility(View.GONE);
                     if (rvQuizPanels != null) rvQuizPanels.setVisibility(View.VISIBLE);
                     quizActive = false;
                     if (r.isSuccessful() && r.body() != null) {
-                        startQuizResult(r.body(), quizQuestions.size());
+                        startQuizResult(r.body(), total);
                     } else {
                         Toast.makeText(getContext(),"测评完成",Toast.LENGTH_SHORT).show();
                     }
@@ -433,6 +440,7 @@ public class FocusFragment extends Fragment {
             @Override public void onFailure(Call<Map<String, Object>> c, Throwable t) {
                 if (!isAdded()) return;
                 handler.post(() -> {
+                    pd.dismiss();
                     quizQuestions.clear(); quizAdapter.notifyDataSetChanged();
                     llQuizArea.setVisibility(View.GONE);
                     if (rvQuizPanels != null) rvQuizPanels.setVisibility(View.VISIBLE);
@@ -466,6 +474,14 @@ public class FocusFragment extends Fragment {
         it.putStringArrayListExtra("strengths", toStringList(data.get("strengths")));
         it.putStringArrayListExtra("weaknesses", toStringList(data.get("weaknesses")));
         it.putStringArrayListExtra("studyPlan", toStringList(data.get("study_plan")));
+
+        // 本次错题详情，JSON 字符串传递
+        Object wrongObj = data.get("wrongAnswers");
+        String wrongJson = "";
+        if (wrongObj instanceof List && !((List<?>) wrongObj).isEmpty()) {
+            wrongJson = new com.google.gson.Gson().toJson(wrongObj);
+        }
+        it.putExtra("wrongAnswersJson", wrongJson);
 
         startActivityForResult(it, 1001);
     }

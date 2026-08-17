@@ -67,8 +67,8 @@ public class ScheduleFragment extends Fragment {
     private boolean semestersLoaded = false;
 
     // ========== 常量 ==========
-    // 艺术学部/汽车学部作息：每天8节课，周日不排课
-    private static final String[] DAY_NAMES = {"周一", "周二", "周三", "周四", "周五", "周六"};
+    // 艺术学部/汽车学部作息：每天8节课，周一至周日均显示
+    private static final String[] DAY_NAMES = {"周一", "周二", "周三", "周四", "周五", "周六", "周日"};
     private static final int[] SLOT_WEIGHTS = {1, 1, 1, 1, 1, 1, 1, 1};
 
     private static final String[][] SLOTS = {
@@ -399,13 +399,13 @@ public class ScheduleFragment extends Fragment {
         timeHeader.setBackgroundColor(0xFFF5F5F7);
         rowHeader.addView(timeHeader);
         
-        // 周一到周六，带日期和高亮（周日不排课）
+        // 周一到周日，带日期和高亮
         // 日期锚定开学日所在自然周的周一 + 当前周次，对齐真实星期几，与上传/查看日期无关
         updateDateInfo();
         Calendar cal = getWeekMonday(currentWeek);
         SimpleDateFormat sdf = new SimpleDateFormat("M/d", Locale.CHINA);
         
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 7; i++) {
             String dateStr = sdf.format(cal.getTime());
             String label = DAY_NAMES[i] + "\n" + dateStr;
             boolean isToday = isTodayInWeek(currentWeek) && (i == todayIdx);
@@ -482,7 +482,7 @@ public class ScheduleFragment extends Fragment {
         Calendar today = Calendar.getInstance();
         long todayMs = today.getTimeInMillis();
         long startMs = weekMon.getTimeInMillis();
-        long endMs = startMs + 6L * 24 * 60 * 60 * 1000; // 周一 ~ 周六
+        long endMs = startMs + 7L * 24 * 60 * 60 * 1000; // 周一 ~ 周日
         return todayMs >= startMs && todayMs <= endMs;
     }
 
@@ -495,7 +495,7 @@ public class ScheduleFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("M/d", Locale.CHINA);
         Calendar start = getWeekMonday(currentWeek);
         Calendar end = (Calendar) start.clone();
-        end.add(Calendar.DAY_OF_MONTH, 5); // 周六
+        end.add(Calendar.DAY_OF_MONTH, 6); // 周日
         tvDateInfo.setText(sdf.format(start.getTime()) + " - " + sdf.format(end.getTime()));
     }
 
@@ -595,8 +595,8 @@ public class ScheduleFragment extends Fragment {
         timeCol.addView(tvEnd);
         row.addView(timeCol);
 
-        // 6天课程格（周日不排课）
-        for (int d = 1; d <= 6; d++) {
+        // 7天课程格（周一至周日）
+        for (int d = 1; d <= 7; d++) {
             row.addView(buildCourseCell(d, start, end, slotIndex));
         }
         return row;

@@ -68,3 +68,16 @@ export const importStudents = (file: File) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
+
+// 查询教师所教课程及班级
+export const getTeacherCourses = (params: { teacherUserId: number; semester?: string }) => {
+  return request.get<any, {
+    course_id: number
+    course_name: string
+    course_type: string | null
+    credit: number | null
+    semester: string
+    class_id: number
+    class_name: string
+  }[]>('/admin/user/teacher-courses', { params })
+}

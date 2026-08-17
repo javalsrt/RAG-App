@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import {
   Search,
@@ -47,8 +47,9 @@ import {
   deleteUser,
   getClasses,
   importStudents,
+  getTeacherCourses,
 } from '@/api/staff'
-import { Users, School, ChevronLeft, UserCheck, UserX } from 'lucide-react'
+import { Users, School, ChevronLeft, UserCheck, UserX, BookOpen } from 'lucide-react'
 import type { UserListItem, ClassInfo } from '@/types'
 
 const PAGE_SIZE = 10
@@ -161,6 +162,22 @@ export function StaffPage() {
 
   // 更多菜单展开状态
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+
+  // 教师所教课程与班级弹窗
+  const [teacherCoursesOpen, setTeacherCoursesOpen] = useState(false)
+  const [teacherCoursesUser, setTeacherCoursesUser] = useState<UserListItem | null>(null)
+  const [teacherCourses, setTeacherCourses] = useState<
+    {
+      course_id: number
+      course_name: string
+      course_type: string | null
+      credit: number | null
+      semester: string
+      class_id: number
+      class_name: string
+    }[]
+  >([])
+  const [teacherCoursesLoading, setTeacherCoursesLoading] = useState(false)
 
   // Import
   const importInputRef = useRef<HTMLInputElement>(null)
@@ -504,6 +521,60 @@ export function StaffPage() {
     setSelectedMajor(null)
   }
 
+  // 打开教师所教课程与班级弹窗
+  const openTeacherCourses = async (teacher: UserListItem) => {
+    setTeacherCoursesUser(teacher)
+    setTeacherCourses([])
+    setTeacherCoursesOpen(true)
+    setTeacherCoursesLoading(true)
+    try {
+      const data = await getTeacherCourses({ teacherUserId: teacher.id })
+      setTeacherCourses(data || [])
+    } catch {
+      setTeacherCourses([])
+    } finally {
+      setTeacherCoursesLoading(false)
+    }
+  }
+
+  const closeTeacherCourses = () => {
+    setTeacherCoursesOpen(false)
+    setTeacherCoursesUser(null)
+    setTeacherCourses([])
+  }
+
+  // 按课程分组：课程 -> 班级列表
+  const teacherCourseGroups = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        course_id: number
+        course_name: string
+        course_type: string | null
+        credit: number | null
+        semester: string
+        class_name: string
+      }
+    >()
+    for (const item of teacherCourses) {
+      const key = `${item.semester}|${item.course_id}|${item.course_name}`
+      const existing = map.get(key)
+      if (existing) {
+        existing.class_name += `、${item.class_name}`
+      } else {
+        map.set(key, {
+          course_id: item.course_id,
+          course_name: item.course_name,
+          course_type: item.course_type,
+          credit: item.credit,
+          semester: item.semester,
+          class_name: item.class_name,
+        })
+      }
+    }
+    return Array.from(map.values())
+  }, [teacherCourses])
+
   const handleClassClick = (className: string) => {
     // 自动下钻到学生列表：切换到学生 tab、搜索维度=班级、填入关键词
     setActiveTab('students')
@@ -643,7 +714,7 @@ export function StaffPage() {
                       className="flex items-center gap-1 text-sm text-neutral-500 hover:text-primary transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      返回专业
+                      返回{activeTab === 'teachers' ? '院系' : '专业'}
                     </button>
                     <span className="text-neutral-300">/</span>
                     <span className="text-sm font-medium text-neutral-900">
@@ -652,7 +723,7 @@ export function StaffPage() {
                   </>
                 ) : (
                   <span className="text-sm font-medium text-neutral-900">
-                    专业分布
+                    {activeTab === 'teachers' ? '院系分布' : '专业分布'}
                   </span>
                 )}
               </div>
@@ -692,7 +763,7 @@ export function StaffPage() {
                   ))
                 ) : (
                   <div className="col-span-full text-sm text-neutral-400 py-4 text-center">
-                    暂无专业分布数据
+                    暂无{activeTab === 'teachers' ? '院系' : '专业'}分布数据
                   </div>
                 )}
               </div>
@@ -840,9 +911,13 @@ export function StaffPage() {
                               {(teacher.realName || teacher.username || '?').charAt(0)}
                             </div>
                             <div>
-                              <div className="font-medium text-neutral-900">
+                              <button
+                                onClick={() => openTeacherCourses(teacher)}
+                                className="font-medium text-neutral-900 hover:text-primary hover:underline transition-colors cursor-pointer"
+                                title="点击查看所教课程与班级"
+                              >
                                 {teacher.realName || '-'}
-                              </div>
+                              </button>
                               <div className="text-xs text-neutral-500">
                                 @{teacher.username}
                               </div>
@@ -863,6 +938,15 @@ export function StaffPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1"
+                              onClick={() => openTeacherCourses(teacher)}
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              课程
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -1315,6 +1399,67 @@ export function StaffPage() {
               disabled={resetting}
             >
               {resetting ? '重置中...' : '确认重置'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 教师所教课程与班级弹窗 */}
+      <Dialog open={teacherCoursesOpen} onOpenChange={setTeacherCoursesOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              {teacherCoursesUser?.realName || teacherCoursesUser?.username} 的课程与班级
+            </DialogTitle>
+            <DialogDescription>
+              该教师当前学期所教授的全部课程及对应班级
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {teacherCoursesLoading ? (
+              <div className="flex items-center justify-center py-12 text-neutral-400">
+                <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                加载中...
+              </div>
+            ) : teacherCourseGroups.length === 0 ? (
+              <div className="py-12 text-center text-neutral-400">
+                暂无课程数据
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {teacherCourseGroups.map((item) => (
+                  <div
+                    key={`${item.semester}-${item.course_id}`}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-medium text-neutral-900">
+                        {item.course_name}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {item.course_type && (
+                          <Badge variant="secondary">{item.course_type}</Badge>
+                        )}
+                        {item.credit != null && (
+                          <span className="text-neutral-500">{item.credit} 学分</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-neutral-600">
+                      <span className="text-neutral-400">班级：</span>
+                      {item.class_name}
+                    </div>
+                    <div className="text-xs text-neutral-400 mt-1">
+                      学期：{item.semester}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter className="border-t border-neutral-100 pt-4 mt-2 flex-shrink-0">
+            <Button variant="outline" onClick={closeTeacherCourses}>
+              关闭
             </Button>
           </DialogFooter>
         </DialogContent>

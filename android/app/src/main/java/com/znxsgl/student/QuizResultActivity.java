@@ -5,10 +5,17 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +25,7 @@ import java.util.Map;
 public class QuizResultActivity extends AppCompatActivity {
 
     private String token;
+    private final Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +73,9 @@ public class QuizResultActivity extends AppCompatActivity {
 
         // 学习计划
         renderStudyPlan(it.getStringArrayListExtra("studyPlan"));
+
+        // 本次错题
+        renderWrongAnswers(it.getStringExtra("wrongAnswersJson"));
 
         findViewById(R.id.btn_wrong_analysis).setOnClickListener(v -> {
             setResult(RESULT_OK, new Intent().putExtra("action", "wrong_analysis"));
@@ -148,6 +159,74 @@ public class QuizResultActivity extends AppCompatActivity {
             ((TextView) row.findViewById(R.id.tv_plan_index)).setText(String.valueOf(i + 1));
             ((TextView) row.findViewById(R.id.tv_plan_text)).setText(plan.get(i));
             container.addView(row);
+        }
+    }
+
+    private void renderWrongAnswers(String wrongJson) {
+        RecyclerView rv = findViewById(R.id.rv_wrong_answers);
+        TextView tvEmpty = findViewById(R.id.tv_wrong_empty);
+
+        List<Map<String, String>> wrongAnswers = new ArrayList<>();
+        if (wrongJson != null && !wrongJson.isEmpty()) {
+            try {
+                wrongAnswers = gson.fromJson(wrongJson, new TypeToken<List<Map<String, String>>>(){}.getType());
+            } catch (Exception ignored) {}
+        }
+
+        if (wrongAnswers == null || wrongAnswers.isEmpty()) {
+            rv.setVisibility(View.GONE);
+            tvEmpty.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        tvEmpty.setVisibility(View.GONE);
+        rv.setVisibility(View.VISIBLE);
+        rv.setLayoutManager(new LinearLayoutManager(this));
+        rv.setAdapter(new WrongAnswerAdapter(wrongAnswers));
+    }
+
+    private static class WrongAnswerAdapter extends RecyclerView.Adapter<WrongAnswerAdapter.VH> {
+        private final List<Map<String, String>> data;
+
+        WrongAnswerAdapter(List<Map<String, String>> data) { this.data = data; }
+
+        @NonNull @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_quiz_wrong, parent, false);
+            return new VH(v);
+        }
+
+        @Override public void onBindViewHolder(@NonNull VH h, int pos) {
+            Map<String, String> item = data.get(pos);
+            String type = item.getOrDefault("questionType", "单选");
+            if ("单选".equals(type)) type = "单选题";
+            else if ("判断".equals(type)) type = "判断题";
+            else if ("解析".equals(type)) type = "解析题";
+            else if ("填空".equals(type)) type = "填空题";
+
+            h.tvType.setText(type);
+            h.tvQuestion.setText(item.getOrDefault("question", ""));
+
+            String ua = item.get("userAnswer");
+            if (ua == null || ua.isEmpty() || "不会".equals(ua)) {
+                h.tvUserAnswer.setText("未作答 / 不会");
+            } else {
+                h.tvUserAnswer.setText(ua);
+            }
+            h.tvCorrectAnswer.setText(item.getOrDefault("correctAnswer", ""));
+        }
+
+        @Override public int getItemCount() { return data.size(); }
+
+        static class VH extends RecyclerView.ViewHolder {
+            TextView tvType, tvQuestion, tvUserAnswer, tvCorrectAnswer;
+            VH(View v) { super(v);
+                tvType = v.findViewById(R.id.tv_type);
+                tvQuestion = v.findViewById(R.id.tv_question);
+                tvUserAnswer = v.findViewById(R.id.tv_user_answer);
+                tvCorrectAnswer = v.findViewById(R.id.tv_correct_answer);
+            }
         }
     }
 

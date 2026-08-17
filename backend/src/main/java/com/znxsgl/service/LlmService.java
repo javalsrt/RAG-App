@@ -51,7 +51,17 @@ public class LlmService {
         if (!globalRateLimiter.tryAcquire()) {
             throw new RateLimitException("AI 服务繁忙，请稍后再试");
         }
-        return chatInternal(null, systemPrompt, userMessage);
+        return chatInternal(null, systemPrompt, userMessage, 8192);
+    }
+
+    /**
+     * 同步调用 AI，指定更大的输出 token 预算（用于生成长文本/大 JSON 的场景）
+     */
+    public String chat(String systemPrompt, String userMessage, int maxTokens) {
+        if (!globalRateLimiter.tryAcquire()) {
+            throw new RateLimitException("AI 服务繁忙，请稍后再试");
+        }
+        return chatInternal(null, systemPrompt, userMessage, maxTokens);
     }
 
     /**
@@ -68,21 +78,21 @@ public class LlmService {
         if (!globalRateLimiter.tryAcquire()) {
             throw new RateLimitException("AI 服务繁忙，请稍后再试");
         }
-        return chatInternal(userId, systemPrompt, userMessage);
+        return chatInternal(userId, systemPrompt, userMessage, 8192);
     }
 
     /**
      * 文档分析（纯文本调用 LLM）
      */
     public String analyzeDocument(String prompt, String filePath, String mimeType) {
-        return chatInternal(null, prompt, "请分析以下文件内容");
+        return chatInternal(null, prompt, "请分析以下文件内容", 8192);
     }
 
-    private String chatInternal(Long userId, String systemPrompt, String userMessage) {
+    private String chatInternal(Long userId, String systemPrompt, String userMessage, int maxTokens) {
         try {
             ObjectNode body = mapper.createObjectNode();
             body.put("model", model);
-            body.put("max_tokens", 8192);
+            body.put("max_tokens", maxTokens);
 
             ArrayNode messages = body.putArray("messages");
             if (systemPrompt != null && !systemPrompt.isEmpty()) {

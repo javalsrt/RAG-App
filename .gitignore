@@ -53,6 +53,9 @@ Thumbs.db
 application-local.yml
 application-dev.yml
 
+# ===== 运行时上传文件(不入库) =====
+backend/uploads/
+
 # ===== 测试数据与一次性调试脚本(不推送到 GitHub) =====
 test/
 

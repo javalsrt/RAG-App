@@ -520,7 +520,7 @@ export function StatsPage() {
                                 <RadarChart data={studentStats.scores}>
                                   <PolarGrid stroke="#e6e9ef" />
                                   <PolarAngleAxis dataKey="name" stroke="#7f8798" fontSize={12} />
-                                  <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#d1d7e2" fontSize={10} />
+                                  <PolarRadiusAxis angle={30} domain={[0, 10]} stroke="#d1d7e2" fontSize={10} />
                                   <Radar
                                     name="能力值"
                                     dataKey="value"

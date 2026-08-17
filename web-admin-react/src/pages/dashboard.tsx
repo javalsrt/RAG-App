@@ -212,6 +212,7 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             {classRankingData.length > 0 ? (
+                <div className="max-w-md mx-auto">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={classRankingData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#e6e9ef" />
@@ -233,13 +234,14 @@ export function DashboardPage() {
                       fontSize: '12px',
                     }}
                   />
-                  <Bar dataKey="avgMinutes" name="人均时长" radius={[0, 6, 6, 0]}>
+                  <Bar dataKey="avgMinutes" name="人均时长" radius={[0, 6, 6, 0]} maxBarSize={40}>
                     {classRankingData.map((_item: any, i: number) => (
                       <Cell key={i} fill={['#5b58ff', '#22c55e', '#f59e0b', '#06b6d4', '#ec4899'][i % 5]} />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+                </div>
             ) : (
               <div className="h-[280px] flex items-center justify-center text-neutral-400">
                 暂无班级数据

@@ -734,12 +734,15 @@ public class CourseChapterService {
             throw new RuntimeException("AI 生成失败，无返回内容");
         }
         plan = stripJsonMarkers(plan);
+        if (plan == null || plan.trim().isEmpty()) {
+            System.out.println("=== AI 生成章节解析失败: courseName=" + courseName + ", 未找到合法 JSON 结构");
+            throw new RuntimeException("AI 返回内容中未找到合法 JSON 结构（模型可能只输出了思考文字），请重试");
+        }
 
-        // 2. 解析 JSON 为 chapters 列表
+        // 2. 解析 JSON 为 chapters 列表（先标准解析，失败再单引号容错转换后重试）
         List<Map<String, Object>> chapters;
         try {
-            chapters = objectMapper.readValue(plan,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+            chapters = parseChapterJson(plan);
         } catch (Exception e) {
             System.out.println("=== AI 生成章节解析失败: courseName=" + courseName + ", error=" + e.getMessage());
             throw new RuntimeException("AI 返回格式解析失败：" + e.getMessage());
@@ -832,6 +835,7 @@ public class CourseChapterService {
         String systemPrompt = "你是资深大学教学大纲设计师。严格只输出合法 JSON 数组，不要任何解释文字、不要用 Markdown 代码块包裹 JSON。";
         String userPrompt = "请为《" + courseName + "》这门大学课程规划完整章节结构，并同时生成每个课时的正文教学内容。\n" +
                 "硬性输出规则（必须严格遵守，否则返回 JSON 非法）：\n" +
+                "0）只输出 JSON 数组本身，开头禁止输出任何思考过程、说明、解释或代码块标记；\n" +
                 "1）5-8 个章节，每章 2-3 个课时；\n" +
                 "2）章节按学习难度递进排序；\n" +
                 "3）每个课时 content 写 300-500 字，必须采用 Markdown 格式，要求：\n" +
@@ -841,13 +845,14 @@ public class CourseChapterService {
                 "   - 较长或较复杂的代码示例必须用 fenced code block（```python ... ```）独占一行或多行，代码块内部除原始代码自带的换行外，严禁自动换行；单行代码必须完整显示在一行内；\n" +
                 "   - 列举多个函数、特性、步骤时，必须使用 Markdown 列表（- 或 1.）展示，每个列表项独占一行，列表项中的英文函数名仍用 `code` 包裹；\n" +
                 "   - 关键术语使用加粗（**term**），每个知识点讲解后必须换行给出 1 个简短例子；\n" +
-                "4）content 中绝对禁止出现未转义的英文双引号（\"）；如需引号请用中文「」或确保 JSON 转义；禁止出现未转义的反斜杠（\\）；\n" +
-                "5）content 里如果需要引用代码变量名如 JAVA_HOME，写成 `JAVA_HOME` 或纯文字 JAVA_HOME，不要加英文引号包裹；\n" +
-                "6）所有字符串（章节名、课时名、content）中必须把英文双引号替换为中文「」或直接去掉，JSON 关键结构引号除外；\n" +
+                "4）JSON 语法硬性要求：所有键名（如 chapterNo、chapterName、lessonNo、lessonName、content）和所有字符串值**必须且只能**使用英文双引号（\"）包裹，**绝对禁止使用单引号（'）**作为 JSON 分隔符；单引号只能作为普通字符出现在 content 代码片段内部（如 print('hi')）；\n" +
+                "5）content 中绝对禁止出现未转义的英文双引号（\"）；如需引号请用中文「」或确保 JSON 转义；禁止出现未转义的反斜杠（\\）；\n" +
+                "6）content 里如果需要引用代码变量名如 JAVA_HOME，写成 `JAVA_HOME` 或纯文字 JAVA_HOME，不要加英文引号包裹；\n" +
                 "7）只输出合法 JSON 数组，格式示例：\n" +
                 "[{\"chapterNo\":1,\"chapterName\":\"章节名\",\"description\":\"简述\",\"lessons\":[{\"lessonNo\":1,\"lessonName\":\"课时名\",\"content\":\"## 知识点一\\n\\n概念说明...\\n\\n例子：...\\n\\n```python\\nprint('hello')\\n```\"}]}]";
         System.out.println("=== AI 生成章节请求: courseName=" + courseName);
-        String raw = llmService.chat(systemPrompt, userPrompt);
+        // 章节+课时正文一次性生成内容量大（上万 token），需用更大的输出预算，避免模型先输出思考文字后被截断
+        String raw = llmService.chat(systemPrompt, userPrompt, 24000);
         System.out.println("=== AI 生成章节原始响应长度=" + (raw == null ? 0 : raw.length()));
         if (raw != null && raw.length() > 200) {
             System.out.println("=== AI 生成章节原始响应前200字=" + raw.substring(0, 200));
@@ -855,84 +860,218 @@ public class CourseChapterService {
             System.out.println("=== AI 生成章节原始响应=" + raw);
         }
         if (raw == null) return null;
-        if (raw.length() > 60000) raw = raw.substring(0, 60000);
-        // 兜底清洗：JSON 值文本内容中残留的未转义英文 " 改为 「 」
-        return sanitizeJsonQuotes(raw);
+        // 不要在提取 JSON 前硬截断：模型可能先输出大段思考文字，提前截断会把末尾的 JSON 内容切掉。
+        // 长度限制（60000）推迟到 stripJsonMarkers 提取出干净的 JSON 主体之后再执行。
+        return raw;
     }
 
     /**
-     * 容错清洗：把 JSON 值文本内容中残留的未转义英文 " 改为 「 」
-     * 启发式：按行遍历，识别 "key":"value" 结构，value 中如果还有多余 " 就替换成「/」交替
+     * 容错清洗：把 JSON 字符串值内部残留的未转义英文 " 替换为「」。
+     * 仅允许在标准解析失败后的兜底路径调用，且输入必须是已剥去推理文字/代码块包裹的 JSON 主体。
+     *
+     * 通过转义感知的状态机保证：
+     *  - 键名与结构引号原样保留，绝不误改；
+     *  - 已转义的 \" 不会被破坏（避免产生非法的 \「 转义）；
+     *  - 只有位于字符串值内部、且后面不是结构符（: , } ] 换行或行尾）的 " 才会被替换。
      */
     private String sanitizeJsonQuotes(String s) {
         if (s == null) return null;
-        StringBuilder sb = new StringBuilder();
-        boolean inString = false;
-        boolean isKey = false;
-        int valueDepth = 0; // 0=不在value内，1=在简单value内，2+在嵌套value
-        int colonAfterKey = 0; // 记录 "key": 冒号位置
-        char prev = '\0';
+        StringBuilder sb = new StringBuilder(s.length());
+        boolean inString = false;   // 是否处于 JSON 字符串内部
+        boolean escaped = false;    // 当前字符被反斜杠转义
+        boolean afterColon = false; // 刚遇到冒号，下一个字符串是值（非键）
+        int valueDepth = 0;         // 值内替换引号的「/」交替计数
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (c == '\"') {
-                if (!inString) {
-                    inString = true;
-                    isKey = true;
+            if (inString) {
+                if (escaped) {
                     sb.append(c);
-                } else {
-                    // 判断是字符串结束还是值内容内部
-                    // 向后看非空白下一个字符是否是 : , } ] \n 等 JSON 结构
+                    escaped = false;
+                } else if (c == '\\') {
+                    sb.append(c);
+                    escaped = true;
+                } else if (c == '"') {
+                    // 判断是字符串真正的结束引号，还是值内容内部残留的引号
                     int j = i + 1;
                     while (j < s.length() && Character.isWhitespace(s.charAt(j))) j++;
                     char next = j < s.length() ? s.charAt(j) : '\0';
-                    // 向前看是否是转义（不应该有，但防护）
-                    boolean endOfString = (next == ':' || next == ',' || next == '}' || next == ']'
+                    boolean isClose = (next == ':' || next == ',' || next == '}' || next == ']'
                             || next == '\n' || next == '\r' || j == s.length());
-                    if (endOfString) {
+                    if (isClose) {
                         inString = false;
-                        isKey = false;
                         sb.append(c);
-                    } else if (next == '\"' && prev == '\\') {
-                        // 已转义，保留
-                        sb.append(c);
+                        if (next == ':') {
+                            afterColon = true;
+                        } else if (next == ',' || next == '}' || next == ']') {
+                            afterColon = false;
+                        }
                     } else {
-                        // 值内部残留的 "，替换为 「/」 交替
+                        // 字符串值内部残留的未转义 "，替换为「/」交替
                         sb.append(valueDepth % 2 == 0 ? '「' : '」');
                         valueDepth++;
                     }
+                } else if (c == '\n') {
+                    // 字符串值内出现真实换行（非法 JSON），转义为 \n
+                    sb.append("\\n");
+                } else if (c == '\r') {
+                    sb.append("\\r");
+                } else {
+                    sb.append(c);
                 }
-            } else if (c == ':' && inString == false && isKey == false) {
-                colonAfterKey = 1;
-                sb.append(c);
             } else {
-                sb.append(c);
+                if (c == '"') {
+                    inString = true;
+                    sb.append(c);
+                } else if (c == ':') {
+                    afterColon = true;
+                    sb.append(c);
+                } else if (c == ',' || c == '{' || c == '}' || c == '[' || c == ']') {
+                    afterColon = false;
+                    sb.append(c);
+                } else {
+                    sb.append(c);
+                }
             }
-            prev = c;
         }
         return sb.toString();
     }
 
     /**
-     * 剥去 AI 可能输出的 ```json ... ``` 包裹，并补齐截断的 JSON 尾部
+     * 剥去 AI 可能输出的 ```json ... ``` 包裹及前置思考/说明文字，并补齐截断的 JSON 尾部。
+     * 返回的字符串以 [ 或 { 开头，是真正的 JSON 主体。
+     *
+     * @return 干净的 JSON 主体；如果完全找不到 JSON 结构（模型只输出了纯思考文字）返回 null
      */
     private String stripJsonMarkers(String s) {
         if (s == null) return null;
-        int start = s.indexOf("[");
-        int end = s.lastIndexOf("]");
-        String body;
+        s = stripCodeFence(s);
+        int start = findJsonStart(s);
         if (start < 0) {
-            int so = s.indexOf("{");
-            int eo = s.lastIndexOf("}");
-            if (so < 0 || eo < 0 || so >= eo) return s.trim();
-            body = "[" + s.substring(so, eo + 1) + "]";
-        } else if (end < 0 || start >= end) {
-            // 只有起始 [，后面被截断，尝试从 [ 开始补齐
+            // 完全找不到 JSON 结构，返回 null 让上层给出明确错误
+            return null;
+        }
+        char open = s.charAt(start);
+        char close = (open == '[') ? ']' : '}';
+        int end = s.lastIndexOf(close);
+        String body;
+        if (end < start) {
+            // 只有起始、没有闭合（被截断），从起始位置起尝试补齐
             body = completeTruncatedJson(s.substring(start));
         } else {
-            body = s.substring(start, end + 1);
+            body = completeTruncatedJson(s.substring(start, end + 1));
         }
-        // 再校验括号平衡，如不平衡则补全
-        return completeTruncatedJson(body);
+        // 模型可能只输出了单个 JSON 对象而非数组，包一层数组以满足章节列表结构
+        if (open == '{') {
+            body = "[" + body + "]";
+        }
+        // 此时已是干净的 JSON 主体，再做单次生成的长度限制
+        if (body.length() > 60000) body = body.substring(0, 60000);
+        return body;
+    }
+
+    /**
+     * 剥离 Markdown 代码块围栏（```json / ``` / ~~~），只处理“整体包裹”的情况。
+     */
+    private String stripCodeFence(String s) {
+        String t = s.trim();
+        String fence = null;
+        for (String f : new String[]{"```json", "```", "~~~json", "~~~"}) {
+            if (t.startsWith(f)) { fence = f; break; }
+        }
+        if (fence == null) return s;
+        int nl = t.indexOf('\n');
+        if (nl < 0) {
+            // 只有一个围栏标记、没有换行，去掉它
+            String inner = t.substring(fence.length()).trim();
+            return inner.isEmpty() ? s : inner;
+        }
+        String inner = t.substring(nl + 1).trim();
+        // 去掉结尾围栏行
+        int cut = -1;
+        for (String f : new String[]{"```", "~~~"}) {
+            int idx = inner.lastIndexOf(f);
+            if (idx > cut) cut = idx;
+        }
+        if (cut >= 0) {
+            inner = inner.substring(0, cut).trim();
+        }
+        return inner;
+    }
+
+    /**
+     * 找到真正 JSON 主体的起始位置（[ 或 {）。
+     *
+     * 模型经常在 JSON 之前输出大段“复读提示词 + 思考”的文字，这些文字里也可能出现独立的
+     * [ 或 {（例如复述 prompt 中的格式示例）。因此这里不能只取“第一个 [ 后跟 {”，而是：
+     *  1) 收集所有“疑似 JSON 起始”的候选位置（数组 [ 后允许跟 { [ ] " 或数字；对象 { 后允许跟 " 或 }）；
+     *  2) 从最靠后的候选开始向前验证：能一直走到字符串末尾、括号深度归零、且深度归零后仅剩空白字符的
+     *     候选，才认定为真正的 JSON 起始——模型总是在思考文字之后才输出 JSON，真正的 JSON 必然是最靠后的
+     *     可闭合结构；
+     *  3) 若没有候选能完美闭合（说明 JSON 被截断），退回使用最靠前的候选，交由 completeTruncatedJson 补齐。
+     *
+     * @return 起始下标；找不到任何候选时返回 -1
+     */
+    private int findJsonStart(String s) {
+        List<Integer> candidates = new ArrayList<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c != '[' && c != '{') continue;
+            int j = i + 1;
+            while (j < s.length() && Character.isWhitespace(s.charAt(j))) j++;
+            char n = j < s.length() ? s.charAt(j) : '\0';
+            if (c == '[') {
+                if (n == '{' || n == '[' || n == ']' || n == '"' || Character.isDigit(n)) {
+                    candidates.add(i);
+                }
+            } else {
+                if (n == '"' || n == '}') {
+                    candidates.add(i);
+                }
+            }
+        }
+        if (candidates.isEmpty()) return -1;
+        // 从最靠后往前，找能完美闭合到末尾的候选
+        for (int idx = candidates.size() - 1; idx >= 0; idx--) {
+            if (isCleanJsonToEnd(s, candidates.get(idx))) {
+                return candidates.get(idx);
+            }
+        }
+        // 都没有完美闭合（可能是截断），退回最靠前的候选作为最佳猜测
+        return candidates.get(0);
+    }
+
+    /**
+     * 从 start 开始做一次括号平衡扫描，判断它是否是响应末尾的完整 JSON 主体：
+     *   - 括号深度全程不为负；
+     *   - 深度最终归零；
+     *   - 深度归零之后只剩空白字符（说明这个结构就是响应末尾的 JSON，而非思考文字里的示例片段）。
+     * 扫描对字符串与转义敏感，因此 content 代码块内部的 [ { 不会被误判为 JSON 起始。
+     */
+    private boolean isCleanJsonToEnd(String s, int start) {
+        int depth = 0;
+        boolean inStr = false, esc = false;
+        for (int i = start; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (esc) { esc = false; continue; }
+            if (inStr) {
+                if (c == '\\') esc = true;
+                else if (c == '"') inStr = false;
+                continue;
+            }
+            switch (c) {
+                case '"': inStr = true; break;
+                case '{': depth++; break;
+                case '}': depth--; if (depth < 0) return false; break;
+                case '[': depth++; break;
+                case ']': depth--; if (depth < 0) return false; break;
+                default:
+                    if (depth == 0 && !Character.isWhitespace(c)) {
+                        // 深度已归零但后面还有非空白字符 -> 这是思考文字里的片段，不是末尾的 JSON
+                        return false;
+                    }
+            }
+        }
+        return depth == 0 && !inStr;
     }
 
     /**
@@ -967,6 +1106,108 @@ public class CourseChapterService {
         // 逐层补对象/数组括号
         while (objDepth-- > 0) sb.append('}');
         while (arrDepth-- > 0) sb.append(']');
+        return sb.toString();
+    }
+
+    /**
+     * 解析 AI 返回的章节 JSON 数组。
+     * 标准 Jackson 解析失败时，先尝试把 Python 风格的单引号 JSON 转换为标准双引号 JSON，再解析。
+     */
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> parseChapterJson(String plan) {
+        try {
+            return objectMapper.readValue(plan,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+        } catch (Exception e) {
+            // 容错：模型可能输出了单引号包裹的键/值（Python dict 风格）
+            String repaired = repairSingleQuoteJson(plan);
+            String cleaned = sanitizeJsonQuotes(repaired);
+            System.out.println("=== AI 生成章节单引号容错: 转换后长度=" + cleaned.length());
+            try {
+                return objectMapper.readValue(cleaned,
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+            } catch (Exception e2) {
+                throw new RuntimeException("单引号容错转换后仍解析失败：" + e2.getMessage(), e2);
+            }
+        }
+    }
+
+    /**
+     * 把 Python 风格的单引号 JSON 转换为标准双引号 JSON。
+     * 状态机：
+     *  - 已处于合法双引号字符串内时，原样保留（content 代码块内的单引号不会被误伤）；
+     *  - 双引号字符串之外遇到的单引号，视为 JSON 字符串分隔符，转换为双引号；
+     *  - 转换后的字符串内部，单引号若后面紧跟 : , } ] 或行尾才视为闭合分隔符；
+     *    否则（如 print('hi') 中的引号）保留为普通字符。
+     */
+    private String repairSingleQuoteJson(String s) {
+        if (s == null) return s;
+        StringBuilder sb = new StringBuilder(s.length() + 64);
+        boolean inDouble = false; // 处于合法双引号字符串内
+        boolean inSingle = false; // 处于待转换的单引号字符串内
+        boolean esc = false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+
+            if (inDouble) {
+                sb.append(c);
+                if (esc) {
+                    esc = false;
+                } else if (c == '\\') {
+                    esc = true;
+                } else if (c == '"') {
+                    inDouble = false;
+                }
+                continue;
+            }
+
+            if (inSingle) {
+                if (c == '\\') {
+                    // 单引号字符串内的转义：\' 或 \" -> \"（因为外层改为双引号）
+                    if (i + 1 < s.length()) {
+                        char n = s.charAt(i + 1);
+                        if (n == '\'' || n == '"') {
+                            sb.append('\\').append('"');
+                        } else {
+                            sb.append('\\').append(n);
+                        }
+                        i++;
+                    } else {
+                        sb.append(c);
+                    }
+                    continue;
+                }
+                if (c == '\'') {
+                    // 向后看，判断是否字符串结束（后面是结构符或行尾）
+                    int j = i + 1;
+                    while (j < s.length() && Character.isWhitespace(s.charAt(j))) j++;
+                    char next = j < s.length() ? s.charAt(j) : '\0';
+                    boolean isEnd = (next == ':' || next == ',' || next == '}' || next == ']'
+                            || next == '\n' || next == '\r' || j == s.length());
+                    if (isEnd) {
+                        inSingle = false;
+                        sb.append('"');
+                    } else {
+                        // 普通单引号字符（如 print('hi')），原样保留
+                        sb.append('\'');
+                    }
+                } else {
+                    sb.append(c);
+                }
+                continue;
+            }
+
+            // 双引号字符串之外
+            if (c == '"') {
+                inDouble = true;
+                sb.append(c);
+            } else if (c == '\'') {
+                inSingle = true;
+                sb.append('"');
+            } else {
+                sb.append(c);
+            }
+        }
         return sb.toString();
     }
 }
