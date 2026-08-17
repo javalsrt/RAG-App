@@ -1,0 +1,19 @@
+{
+  "name": "znxsgl-miniapp",
+  "version": "1.0.0",
+  "description": "RAG智能学习助手小程序",
+  "scripts": {
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:mp-weixin": "uni build -p mp-weixin",
+    "dev:h5": "uni",
+    "build:h5": "uni build"
+  },
+  "devDependencies": {
+    "@dcloudio/uni-mp-weixin": "^3.0.0-alpha-4080720251125001",
+    "@dcloudio/uni-preset-vue": "^2.0.0",
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-4080720251125001",
+    "sass": "^1.69.0",
+    "vite": "^4.5.0",
+    "vue": "^2.7.16"
+  }
+}

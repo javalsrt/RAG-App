@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_schedule"
+        android:icon="@drawable/ic_schedule"
+        android:title="课表" />
+    <item android:id="@+id/nav_focus"
+        android:icon="@drawable/ic_focus"
+        android:title="专注" />
+    <item android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="我的" />
+</menu>

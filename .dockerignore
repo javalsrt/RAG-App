@@ -1,0 +1,9 @@
+backend/target/
+backend/.idea/
+backend/*.iml
+.git
+.gitignore
+testtxt/
+*.png
+*.jpg
+*.log

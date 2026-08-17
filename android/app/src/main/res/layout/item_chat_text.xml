@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="4dp">
+
+    <!-- 对方头像 -->
+    <TextView
+        android:id="@+id/tv_avatar_left"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:gravity="center"
+        android:text="A"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="@color/ink"
+        android:background="@drawable/bg_avatar_other" />
+
+    <!-- 消息内容区 -->
+    <LinearLayout
+        android:id="@+id/ll_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginHorizontal="6dp">
+
+        <TextView
+            android:id="@+id/tv_sender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="11sp"
+            android:textColor="@color/ink_subtle"
+            android:layout_marginBottom="2dp" />
+
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="消息内容"
+            android:textSize="15sp"
+            android:maxWidth="260dp"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp" />
+
+        <!-- 链接预览卡片 -->
+        <LinearLayout
+            android:id="@+id/ll_link_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="10dp"
+            android:layout_marginTop="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_link_icon"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="🔗"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:id="@+id/tv_link_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="链接"
+                    android:textSize="13sp"
+                    android:textColor="@color/ink"
+                    android:maxWidth="180dp"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
+
+                <TextView
+                    android:id="@+id/tv_link_url"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="example.com"
+                    android:textSize="11sp"
+                    android:textColor="@color/ink_subtle"
+                    android:maxWidth="180dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 自己头像 -->
+    <TextView
+        android:id="@+id/tv_avatar_right"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:gravity="center"
+        android:text="我"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:background="@drawable/bg_avatar_me" />
+</LinearLayout>

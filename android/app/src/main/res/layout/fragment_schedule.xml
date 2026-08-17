@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical">
+
+    <!-- ========== 顶部区域 ========== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:background="#FFFFFF">
+
+        <!-- 第一行：周数 + 年月日 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- 周数按钮（可点击选择） -->
+            <TextView
+                android:id="@+id/tv_week_label"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="第1周"
+                android:textColor="#1D1D1F"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:paddingEnd="12dp"
+                android:drawableEnd="@drawable/ic_arrow_down"
+                android:drawablePadding="4dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- 学期标签（可点击切换学期） -->
+            <TextView
+                android:id="@+id/tv_semester_label"
+                android:layout_width="wrap_content"
+                android:layout_height="26dp"
+                android:gravity="center"
+                android:text=""
+                android:textColor="#5E6AD2"
+                android:textSize="12sp"
+                android:background="#F0F4FF"
+                android:paddingHorizontal="10dp"
+                android:layout_marginEnd="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="20dp"
+                android:background="#E5E7EB"
+                android:layout_marginHorizontal="12dp" />
+
+            <!-- 年月日 -->
+            <TextView
+                android:id="@+id/tv_date_info"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""
+                android:textColor="#86868B"
+                android:textSize="14sp" />
+
+            <!-- 今天按钮 -->
+            <TextView
+                android:id="@+id/btn_today"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minWidth="52dp"
+                android:gravity="center"
+                android:text="今天"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:background="@drawable/bg_today_btn"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- 第二行：周选择器（1-18） -->
+        <HorizontalScrollView
+            android:id="@+id/scroll_weeks"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:scrollbars="none"
+            android:paddingVertical="4dp">
+
+            <LinearLayout
+                android:id="@+id/container_weeks"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical" />
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- 分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E5E7EB" />
+
+    <!-- ========== 课表网格 8×8 ========== -->
+    <HorizontalScrollView
+        android:id="@+id/scroll_grid"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <!-- 表头行 -->
+            <LinearLayout
+                android:id="@+id/row_header"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
+                android:background="#F5F5F7">
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E5E7EB" />
+
+            <!-- 课表内容区（无嵌套 ScrollView，全部撑满底部） -->
+            <LinearLayout
+                android:id="@+id/grid_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+            </LinearLayout>
+        </LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>

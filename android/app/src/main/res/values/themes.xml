@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Light Theme -->
+    <style name="Base.Theme.ZnxsglStudent" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/canvas</item>
+        <item name="android:navigationBarColor">@color/canvas</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">@color/canvas</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorSurface">@color/surface_1</item>
+        <item name="colorOnSurface">@color/ink</item>
+    </style>
+
+    <style name="Theme.ZnxsglStudent" parent="Base.Theme.ZnxsglStudent" />
+
+    <style name="LoginButton" parent="Widget.Material3.Button">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="backgroundTint">@color/primary</item>
+    </style>
+
+    <style name="LoginInput" parent="Widget.Material3.TextInputEditText.FilledBox">
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="NavTextStyle" parent="TextAppearance.AppCompat.Caption">
+        <item name="android:textSize">11sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+</resources>

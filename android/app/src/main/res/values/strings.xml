@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">学习中</string>
+    <string name="login_title">欢迎回来</string>
+    <string name="login_subtitle">请登录您的学生账号</string>
+    <string name="username_hint">请输入学号 / 用户名</string>
+    <string name="password_hint">请输入密码</string>
+    <string name="login_btn">登 录</string>
+    <string name="login_loading">登录中...</string>
+    <string name="brand_name">学习中心</string>
+    <string name="brand_desc">基于RAG的智能学习平台</string>
+    <string name="error_empty">请输入账号和密码</string>
+    <string name="error_network">无法连接服务器</string>
+    <string name="error_auth">账号或密码错误</string>
+</resources>

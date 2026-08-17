@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="选择操作"
+        android:textSize="15sp"
+        android:textColor="#86868B"
+        android:paddingBottom="12dp" />
+
+    <LinearLayout
+        android:id="@+id/btn_camera"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/bg_card_entry"
+        android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView android:layout_width="32dp" android:layout_height="32dp"
+            android:text="📷" android:textSize="18sp" android:gravity="center"
+            android:background="@drawable/bg_circle_light" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="拍照" android:textSize="15sp" android:textColor="#1D1D1F"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/btn_file"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:background="@drawable/bg_card_entry"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView android:layout_width="32dp" android:layout_height="32dp"
+            android:text="📁" android:textSize="18sp" android:gravity="center"
+            android:background="@drawable/bg_circle_light" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="资料上传" android:textSize="15sp" android:textColor="#1D1D1F"
+            android:layout_marginStart="12dp" />
+    </LinearLayout>
+</LinearLayout>

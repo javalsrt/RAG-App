@@ -1,0 +1,26 @@
+{
+    "name" : "学习中",
+    "appid" : "",
+    "description" : "RAG智能学习助手小程序",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "uniStatistics" : {
+        "enable" : false
+    },
+    "mp-weixin" : {
+        "appid" : "wxbe962f98e498c0e8",
+        "setting" : {
+            "urlCheck" : false,
+            "es6" : true,
+            "postcss" : true,
+            "minified" : true
+        },
+        "usingComponents" : true,
+        "lazyCodeLoading" : "requiredComponents"
+    },
+    "h5" : {
+        "routerMode" : "hash",
+        "title" : "学习中"
+    }
+}

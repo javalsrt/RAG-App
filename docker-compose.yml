@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  # ===== MySQL 数据库 =====
+  mysql:
+    image: mysql:8.0
+    container_name: znxsgl-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: znxsglTest
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"   # 映射到宿主机 3307 避免和本地 MySQL 冲突
+    volumes:
+      - mysql_data:/var/lib/mysql           # 数据持久化
+      - ./init-db:/docker-entrypoint-initdb.d  # 自动初始化 SQL
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===== Spring Boot 后端 =====
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: znxsgl-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/znxsglTest?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      JWT_SECRET: ZnxsglRAGLearningApp2026SecretKeyForJWTTokenGenerationMustBe256Bits
+      JWT_EXPIRATION: "86400000"
+      # LLM 与 Embedding 均通过本地/独立服务提供，无需 DashScope
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+    ports:
+      - "8080:8080"
+
+  # ===== Nginx 前端 =====
+  nginx:
+    image: nginx:alpine
+    container_name: znxsgl-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"       # 访问 http://服务器IP 即可打开
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./web-admin:/usr/share/nginx/html
+
+volumes:
+  mysql_data:

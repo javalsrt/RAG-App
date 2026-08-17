@@ -1,0 +1,45 @@
+{
+  "pages": [
+    {
+      "path": "pages/login/index",
+      "style": { "navigationBarTitleText": "登录", "navigationStyle": "custom" }
+    },
+    {
+      "path": "pages/index/index",
+      "style": { "navigationBarTitleText": "学习中" }
+    },
+    {
+      "path": "pages/schedule/index",
+      "style": { "navigationBarTitleText": "课表" }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": { "navigationBarTitleText": "我的" }
+    },
+    {
+      "path": "pages/chat/index",
+      "style": { "navigationBarTitleText": "课程聊天" }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "学习中",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F2F2F7"
+  },
+  "tabBar": {
+    "color": "#86868B",
+    "selectedColor": "#0A84FF",
+    "backgroundColor": "#F5F5F7",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "学习" },
+      { "pagePath": "pages/schedule/index", "text": "课表" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "easycom": {
+    "autoscan": true,
+    "custom": {}
+  }
+}

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <!-- 左侧章节时间线 -->
+    <LinearLayout
+        android:layout_width="32dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <View
+            android:layout_width="2dp"
+            android:layout_height="12dp"
+            android:background="@color/hairline" />
+
+        <ImageView
+            android:id="@+id/iv_chapter_node"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@drawable/circle_node_normal"
+            android:contentDescription="章节节点" />
+
+        <View
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@color/hairline" />
+    </LinearLayout>
+
+    <!-- 右侧章节内容 -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingVertical="8dp"
+        android:paddingEnd="12dp">
+
+        <!-- 章节标题卡片 -->
+        <LinearLayout
+            android:id="@+id/ll_chapter_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_chapter_card"
+            android:padding="14dp"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_chapter_no"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="第1章"
+                    android:textSize="12sp"
+                    android:textColor="@color/primary"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/tv_chapter_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="章节名称"
+                    android:textSize="15sp"
+                    android:textColor="@color/ink"
+                    android:textStyle="bold"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tv_chapter_desc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="章节描述"
+                    android:textSize="12sp"
+                    android:textColor="@color/ink_subtle"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_chapter_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="已完成 0/0 课时"
+                    android:textSize="12sp"
+                    android:textColor="@color/ink_subtle" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_expand_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="▼"
+                android:textSize="14sp"
+                android:textColor="@color/ink_subtle" />
+        </LinearLayout>
+
+        <!-- 课时列表容器 -->
+        <LinearLayout
+            android:id="@+id/ll_lessons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="6dp" />
+    </LinearLayout>
+</LinearLayout>

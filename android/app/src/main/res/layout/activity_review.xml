@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <include layout="@layout/layout_common_header" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 空状态提示 -->
+            <TextView
+                android:id="@+id/tv_review_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:text="暂无测评记录"
+                android:textSize="14sp"
+                android:textColor="@color/ink_subtle"
+                android:gravity="center"
+                android:padding="32dp" />
+
+            <!-- 复习概览 -->
+            <LinearLayout
+                android:id="@+id/card_review_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:padding="18dp">
+
+                <TextView
+                    android:id="@+id/tv_review_subject"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="针对课程："
+                    android:textSize="15sp"
+                    android:textColor="@color/ink"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_review_accuracy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="上次正确率 0%"
+                    android:textSize="14sp"
+                    android:textColor="@color/primary"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/tv_review_suggestion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="AI 综合建议"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/ink_muted" />
+            </LinearLayout>
+
+            <!-- 薄弱环节 -->
+            <LinearLayout
+                android:id="@+id/card_review_weaknesses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="薄弱环节"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/danger" />
+
+                <LinearLayout
+                    android:id="@+id/ll_review_weaknesses"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal" />
+            </LinearLayout>
+
+            <!-- 能力维度 -->
+            <LinearLayout
+                android:id="@+id/card_review_scores"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="能力维度分析"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink" />
+
+                <LinearLayout
+                    android:id="@+id/ll_review_scores"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <!-- AI 学习计划 -->
+            <LinearLayout
+                android:id="@+id/card_review_plan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI 学习计划"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink" />
+
+                <LinearLayout
+                    android:id="@+id/ll_review_plan"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <!-- 推荐复习章节 -->
+            <LinearLayout
+                android:id="@+id/card_recommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="推荐复习章节"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/ink" />
+
+                <LinearLayout
+                    android:id="@+id/ll_recommended_chapters"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <!-- 底部按钮 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_review_learn"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:gravity="center"
+                    android:text="去学习章节"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/bg_btn_primary" />
+
+                <TextView
+                    android:id="@+id/btn_review_done"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:gravity="center"
+                    android:text="完成"
+                    android:textSize="14sp"
+                    android:textColor="@color/primary"
+                    android:background="@drawable/bg_btn_outline" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="12dp"
+    android:paddingHorizontal="16dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- 上半部分：图标 + 信息 + 右侧状态 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- 课程图标 -->
+        <TextView
+            android:id="@+id/tv_course_icon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:text="课"
+            android:textSize="18sp"
+            android:textColor="@color/primary"
+            android:background="@drawable/bg_circle_light" />
+
+        <!-- 课程信息 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp">
+
+            <TextView
+                android:id="@+id/tv_course_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="课程名"
+                android:textSize="15sp"
+                android:textColor="#1D1D1F"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_course_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="教室 · 教师"
+                android:textSize="12sp"
+                android:textColor="#86868B"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <!-- 右侧提示信息区域：统一靠右并垂直居中 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginStart="8dp">
+
+            <!-- 学期标签 -->
+            <TextView
+                android:id="@+id/tv_semester_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="暑假班"
+                android:textSize="10sp"
+                android:textColor="#FA8C16"
+                android:background="#FFF7E6"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="1dp"
+                android:visibility="gone" />
+
+            <!-- 红点（未读消息） -->
+            <TextView
+                android:id="@+id/tv_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="18dp"
+                android:gravity="center"
+                android:text="1"
+                android:textSize="10sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/bg_badge_red"
+                android:paddingHorizontal="4dp"
+                android:layout_marginStart="6dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone" />
+
+            <!-- 状态标签 -->
+            <TextView
+                android:id="@+id/tv_course_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已下架"
+                android:textSize="10sp"
+                android:textColor="#FF9500"
+                android:background="#FFF8F0"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:layout_marginStart="6dp"
+                android:visibility="gone" />
+
+            <!-- 箭头 -->
+            <TextView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:text="›"
+                android:textSize="20sp"
+                android:textColor="#C7C7CC"
+                android:gravity="center" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 下半部分：考试/作业待办入口 -->
+    <!-- 关键点：android:descendantFocusability="blocksDescendants" 配合 requestDisallowInterceptTouchEvent
+         防止外层 NestedScrollView / RecyclerView 拦截横向触摸，导致子标签点击失效 -->
+    <HorizontalScrollView
+        android:id="@+id/hsv_pending_exams"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="56dp"
+        android:scrollbars="none"
+        android:fillViewport="true"
+        android:descendantFocusability="afterDescendants"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/ll_pending_exams"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+</LinearLayout>

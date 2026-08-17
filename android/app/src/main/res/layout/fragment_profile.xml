@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/canvas">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="82dp">
+
+
+        <!-- 用户信息头 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingTop="48dp"
+            android:paddingBottom="36dp"
+            android:background="@color/canvas">
+
+            <TextView
+                android:id="@+id/tv_avatar"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:text="张"
+                android:textSize="28sp"
+                android:textColor="@color/on_primary"
+                android:gravity="center"
+                android:fontFamily="sans-serif-medium"
+                android:background="@drawable/bg_avatar_circle" />
+
+            <TextView
+                android:id="@+id/tv_real_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="张明"
+                android:textSize="22sp"
+                android:textColor="@color/ink"
+                android:fontFamily="sans-serif-medium" />
+
+            <TextView
+                android:id="@+id/tv_student_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="学号: 20240101001"
+                android:textSize="14sp"
+                android:textColor="@color/ink_subtle"
+                android:fontFamily="sans-serif" />
+
+            <!-- 设置按钮 -->
+            <TextView
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="-28dp"
+                android:text="设置"
+                android:textSize="14sp"
+                android:textColor="@color/ink_subtle"
+                android:padding="6dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- 学习统计卡片 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/bg_card_entry"
+            android:paddingVertical="28dp">
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                <TextView android:id="@+id/tv_stat_hours" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="128"
+                    android:textSize="24sp" android:textColor="@color/ink"
+                    android:fontFamily="sans-serif" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" android:text="学习时长(分)"
+                    android:textSize="12sp" android:textColor="@color/ink_subtle" />
+            </LinearLayout>
+
+            <View android:layout_width="1dp" android:layout_height="36dp"
+                android:background="@color/hairline" />
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                <TextView android:id="@+id/tv_stat_quiz" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="342"
+                    android:textSize="24sp" android:textColor="@color/ink"
+                    android:fontFamily="sans-serif" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" android:text="完成题目"
+                    android:textSize="12sp" android:textColor="@color/ink_subtle" />
+            </LinearLayout>
+
+            <View android:layout_width="1dp" android:layout_height="36dp"
+                android:background="@color/hairline" />
+
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+                <TextView android:id="@+id/tv_stat_rate" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="85.6%"
+                    android:textSize="24sp" android:textColor="@color/primary"
+                    android:fontFamily="sans-serif" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" android:text="正确率"
+                    android:textSize="12sp" android:textColor="@color/ink_subtle" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 收藏题目入口 -->
+        <LinearLayout
+            android:id="@+id/ll_bookmarks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_entry"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📌 收藏题目"
+                android:textSize="14sp"
+                android:textColor="@color/ink" />
+
+            <TextView
+                android:id="@+id/tv_bookmark_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="14sp"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="  >"
+                android:textSize="14sp"
+                android:textColor="@color/ink_tertiary" />
+        </LinearLayout>
+
+        <!-- 通讯录入口 -->
+        <LinearLayout
+            android:id="@+id/ll_contacts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_card_entry"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="👥 通讯录"
+                android:textSize="14sp"
+                android:textColor="@color/ink" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="同班同学 / 任课教师  >"
+                android:textSize="13sp"
+                android:textColor="@color/ink_subtle" />
+        </LinearLayout>
+
+        <!-- 我的课程 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card_entry"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="我的课程"
+                android:textSize="13sp"
+                android:textColor="@color/ink_subtle"
+                android:fontFamily="sans-serif-medium"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_courses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:nestedScrollingEnabled="true"
+                android:paddingBottom="8dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

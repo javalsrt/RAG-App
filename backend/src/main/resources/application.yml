@@ -1,0 +1,55 @@
+server:
+  port: 8080
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/znxsglTest?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-not-delete-value: 0
+  # 审计字段自动填充（配合实体 @TableField(fill=...) 使用）
+  meta-object-handler: com.znxsgl.config.MyBatisPlusMetaObjectHandler
+
+jwt:
+  # 通过环境变量 JWT_SECRET 注入，本地开发默认值仅供测试使用
+  secret: ${JWT_SECRET:ZnxsglRAGLearningApp2026SecretKeyForJWTTokenGenerationMustBe256Bits}
+  expiration: 604800000
+
+# LLM 对话模型配置（当前使用 DeepSeek R1）
+# API Key 必须通过环境变量 DEEPSEEK_API_KEY 注入，不再内置兜底值
+llm:
+  api-key: ${DEEPSEEK_API_KEY}
+  model: deepseek-v4-pro
+  url: https://api.deepseek.com/chat/completions
+
+# 本地 BGE-M3 Embedding 服务配置
+embedding:
+  local:
+    url: http://localhost:8000/embeddings
+    # 是否随 Spring Boot 一起启动本地 Embedding 服务
+    auto-start: true
+    port: 8000
+    # Python 命令，Windows 可改为 python，Linux/macOS 可改为 python3
+    python-cmd: python
+    # 服务目录，留空则自动探测（项目根目录/embedding-service 或 backend/../embedding-service）
+    work-dir:

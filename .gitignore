@@ -1,0 +1,62 @@
+# ===== 大体积 AI 模型(绝不入库) =====
+embedding-service/models/
+
+# ===== 旧仓库备份(仅本地还原用,绝不入库) =====
+.git-old-backup/
+
+# ===== 依赖目录(由包管理器自动生成) =====
+node_modules/
+web-admin-react/node_modules/
+miniapp/node_modules/
+
+# ===== 编译/构建产物 =====
+backend/target/
+web-admin-react/dist/
+web-admin-react/*.tsbuildinfo
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+miniapp/unpackage/
+
+# ===== 临时脚本与运行时文件 =====
+tmp_*
+_tmp_*
+*.log
+*.pid
+cookies.txt
+backend-error.log
+backend.log
+backend-runtime.log
+backend.pid
+frontend-runtime.log
+frontend.pid
+*.swp
+*.swo
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+
+# ===== OS =====
+Thumbs.db
+.DS_Store
+
+# ===== 本地环境配置(含数据库密码) =====
+application-local.yml
+application-dev.yml
+
+# ===== 测试数据与一次性调试脚本(不推送到 GitHub) =====
+test/
+
+# ===== 测试生成物 =====
+test/__pycache__/
+test/loadtest_results/
+test/screenshots/
